@@ -1,0 +1,48 @@
+\documentclass{sig-alternate-05-2015}
+%Hide ISBN from bottom
+\makeatletter
+\def\@copyrightspace{\relax}
+\makeatother
+
+\usepackage{subfiles}
+\usepackage{hyperref}
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+
+\begin{document}
+%Title
+\title{CDR based geo-positioning of anonymous user in Berlin area}
+\subtitle{[Extended Abstract]}
+
+%Author(s)
+\numberofauthors{1}
+\author{
+\alignauthor
+Julia Hermann\\
+       \affaddr{University of Trento}\\
+       \email{julia.hermann@studenti.unitn.it}
+}
+
+%Abstract
+\maketitle
+%Date
+\date{28 February 2018}
+\begin{abstract}
+This paper attempts to validate the usage of localized Call Detail Records (CDR) data for customer positioning by comparing them to GPS data, that is considered as ground-truth. The CDR events are localized with two different types of cell map data-sets, an open-source and a proprietary one. The data processing architecture relies on standalone Spark cluster running in Docker container. The analysis shows that a customer can be positioned given their CDR data with around 500 meters accuracy, depending on individual mobile usage habits, network characteristics and geographical position.
+
+\end{abstract}
+\keywords{big data, Spark, geo-positioning, GPS, CDR}
+%Main parts
+\section{Introduction}\subfile{intro}
+\section{Problem Statement}\subfile{problem_statement.tex}
+\section{Literature Review}\subfile{related_work.tex}
+\section{Solution}\subfile{solution.tex}
+\section{Implementation}\subfile{implementation.tex}
+\section{Analysis}\subfile{analysis.tex}
+\section{Experiments}\subfile{experiments.tex}
+\section{Conclusion}\subfile{conclusion.tex}
+%\clearpage
+%References
+\bibliographystyle{abbrv}
+\bibliography{refs}
+\end{document}
