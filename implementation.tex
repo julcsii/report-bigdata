@@ -22,7 +22,7 @@ The following data sources are used:
 \item Cell map:
 \begin{itemize}
     \item OpenCelliD public data set representing cell tower locations and meta data.
-    \item Proprietary data set from Telefonica containing cell locations and meta data within the Telefonica cellular network.
+    \item Proprietary data set provided by Telefonica containing cell locations and meta data within the Telefonica Germany's cellular network.
 \end{itemize}
 \item CDR data: Sequences of mobile network events recorded on the test phone
 \item GPS trajectories recorded on the test phone
@@ -43,7 +43,7 @@ The full data set of OpenCelliD was downloaded as of 1 March 2018. The downloade
 \item updated: \textit{integer} - The last time when the cell tower was seen and updated.
 \end{itemize}
 
-The other cell map data set  used in the analysis is proprietary and therefore will not be discussed in details. It contains similar fields to the OpenCelliD cell map including location information and cell identification required for the analysis.
+The other cell map data set used in the analysis is proprietary and therefore will not be discussed in details. It contains similar fields to the OpenCelliD cell map including location information and cell identification required for the analysis.
 
 We expect less cell towers in the outskirts of the city and more towards the center. Figure \ref{fig:opencellid}\footnote{Only the latest observations are shown.} shows that the density of cell towers within Telfonica network from OpenCelliD is quite dense even in the outer regions of Berlin. Thus the data from OpenCelliD might be corrupted or of poor quality. In contrast Figure \ref{fig:tefnext} - showing the cell towers from the internal Telefonica cell map -  seems more reasonable and in line with our expectations.
 
