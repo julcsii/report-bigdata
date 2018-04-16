@@ -1,5 +1,85 @@
-\subsection{Test environment}
+\subsection{Experimental setup}
 The experiments were executed in a Mac Book Pro with the following characteristics: 2,6 GHz Intel Core i5, 8 GB 1600 MHz DDR3 memory and 256 GB of storage.
+
+\subsection{Analysis}
+Data set coming from previous steps are used as an input for the calculations in the analysis. These are some of the most relevant features:
+\begin{itemize}
+    \item system\_time
+    \item cell\_loc
+    \item gps\_loc
+\end{itemize}
+
+The analysis phase is executed with a following steps:
+\begin{enumerate}
+    \item Import Parquet data to pySpark DataFrame
+    \item Generated and display histograms on pairwise distances
+    \item Calculate descriptive statistics on pairwise distances:
+        \begin{itemize}
+            \item min
+            \item max
+            \item sum
+            \item mean
+            \item standard deviation
+        \end{itemize}
+    \item Calculate Euclidean distance measure on trajectories
+    \item Visualize on map
+\end{enumerate}
+
+\subsection{Results}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.45\textwidth]{images/hist_opencell.png}
+    \caption{Histogram of distances using OpenCelliD cell map}
+    \label{fig:hist_opencell}
+\end{figure}
+
+Looking at the histograms of the pairwise Haversine distances between GPS location points and CDR location point on Figure \ref{fig:hist_opencell}, we can say that ???? the majority of the distances fall into the ??? meters range using both cell maps. 
+
+Overall ???\% of the CDR events are positioned with less than ??? meters error. This result can change depending on individual customer's mobile usage habits, network characteristics, cell map data source and the customer's geographical position.
+
+in Table \ref{tab:dist_stats}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|c|}
+        \hline 
+        count &  \\
+        \hline
+        Euclidean dist &  \\
+        \hline
+        min(dist) &  \\
+        \hline
+        max(dist &   \\
+        \hline
+        avg(dist) &  \\
+        \hline
+        stddev(dist) &  \\
+        \hline
+    \end{tabular}
+    \caption{Descriptive statistics of Haversine distances (in meters)}
+    \label{tab:dist_stats}
+\end{table}
+
+When the user is located between several cell towers, the connection can be passed from one tower to another depending on network traffic fluctuations and other factors. This phenomenon is often referred to as cell tower ping-pong handover. It can however be used for improving positioning and identifying points-of-interest (POIs). As seen in Figure \ref{fig:ping-pong}, the user stays relatively still, but the assigned cell towers change. Without knowing the actual GPS position we can approximate the location of the customer using the ping-pong handover schema.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{images/ping-pong.png}
+    \caption{Cell ping-pong handover problem}
+    \label{fig:ping-pong}
+\end{figure}
+
+This method can be further improved if we take into account the angle of the antennas on the cell towers. If we know which antenna is getting the signal, we can guess the direction of the transmitting cell phone and the signal strength can give an approximation of how far away it is. This method is called cell tower triangulation and can be quite accurate in rural regions with more cell towers. However the information about the angles of the antennas and the signal strength can be outdated or even missing therefore it is not always applicable. In this analysis we did not obtain robust data about the positions of the antennas and the signal strength for each CDR event.
+
+Positioning could be improved by reconstructing trajectories considering the road network of Berlin and the potential speed of the movement instead of simply assigning the the cell location from the cell map data.
+
+We identified three major external factors defining the accuracy of the positioning:
+\begin{itemize}
+    \item individual mobile usage habits affecting the sparsity of CDR data,
+    \item geographical location, as rural and urban areas has different cell size and therefore location defines the accuracy of cell tower localization and
+    \item cellular network characteristics that define the overall data quality and the available attributes in the CDR data-set.
+\end{itemize}
+
 
 \subsection{Performance tests}
 In this section we compare the run-time of the tasks using different Spark standalone clusters and different data sources, namely comma separated value files and Parquet files. The specifications of the clusters are shown in Table \ref{tab:spec}
