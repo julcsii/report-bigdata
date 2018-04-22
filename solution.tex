@@ -1,14 +1,18 @@
-More emphasis on the localisation of events
-Why do we use trajectories? Because we learn more about the location of the user  
-Points have a semantics of trajectories so we can group them as trajectories for better positioning
+As the users tend to move while using their phones, the generated CDR observations have semantics of trajectories. CDR data points can be grouped as trajectories so that the characteristics of trajectories and the result of previous research already conducted in this field can be utilized for achieving more accurate positioning.
 
-Add an example
+Similarly to the formulation in \cite{encyclopedia} and \cite{distance-def} we define distance measure on trajectories, such as:
+\begin{definition}
+Let $\mathcal{M}$ be a set of trajectories. A function $D :\mathcal{M} \times \mathcal{M} \rightarrow \mathcal{R}$ \nomenclature{$D$}{Distance measure defined on a set of trajectories.} is called a dissimilarity (distance) on $\mathcal{M}$ if for all $T_{1}, T_{2} \in \mathcal{M}$: 
+\begin{itemize}
+    \item $D(T_{1},T_{2}) \geqslant 0$
+    \item $D(T_{1},T_{2}) = d(T_{2},T_{2})$
+    \item $D(T_{1},T_{1}) = 0$
+\end{itemize}
+If all of these conditions are satisfied and $D(T_{1}, T_{2}) = 0 \Rightarrow  T_{1} = T_{2} $ is considered to be a symmetric. If
+the triangle inequality is also satisfied, $D$ is a metric.
+\end{definition}
 
-how good we estimate the location of users from their network activtiy. Users move and genereate trajectories therefore the rceords have a semantics of trajectories so we group the points into trajectories and then we can benefit from prior work don in trajectory mining for localisation of users. 
-Only for evaluation purposes we consider them as trajectories
-
-
-We compare ground truth GPS trajectories to trajectories of CDR events for the same time window in a distributed fashion as shown in Figure \ref{fig:problem}. 
+We compare the ground truth GPS trajectories to trajectories of CDR events for the same time window in a distributed fashion as shown in Figure \ref{fig:problem}. 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.45\textwidth]{images/localization_eval.png}
@@ -19,16 +23,6 @@ We compare ground truth GPS trajectories to trajectories of CDR events for the s
 To evaluate cellular network event based customer localization we calculate the Euclidean distance and several statistics of the pairwise distances between ground truth GPS trajectories and mobile network event trajectories. The Haversine distance is used to define the spatial distance between points. In the mobile network event trajectory, the location information is obtained from cell map data set.
 
 For these calculations the number of CDR and GPS observations need to match. We join the two trajectories on the timestamp, namely for each CDR event we select the closest GPS observation in time.
-
-\begin{definition}
-A for any two points on a sphere, the Haversine formula determines the spatial distance between the two points \cite{haversine}:
-    \[\Delta_{x} = x_{2} - x_{1}\]
-    \[\Delta_{y} = y_{2} - y_{1}\]
-    \[a = (\sin(\Delta_{y}/2))^2 + \cos{(y_{1})} * \cos{(y_{2})} * (\sin{(\Delta_{x}/2)})^2 \]
-    \[c = 2 * \arcsin{(\min{1,\sqrt{a}})}\]
-    \[d(P_{1}, P_{2}) = R * c\]
-    where $R$ is the radius of the Earth and $x_{i}, y_{i}$ is the longitude, latitude values of $P_{i}$ in radians.
-\end{definition}
 
 Given a set of distance observations with size $n$, we consider $\{d_{1}, d_{2}, ..., d_{n}\}$ as $n$ independent identically distributed (i.i.d) random variables, each corresponding to one randomly selected observation and having the distribution of the population. Then we can calculate the following descriptive statistics for the sample:
 \begin{itemize}
@@ -44,6 +38,8 @@ Note that $\{d_{1}, d_{2}, ..., d_{n}\}$ are the spatial distances between pairs
 
 The \textit{Euclidean distance} (or inverse similarity) measure between two trajectories is used in this analysis:
 \[D(T,\Tilde{T}) = \sqrt{\sum_{i=1}^{n} (d(P_{i},\Tilde{P_{i}}))^{2}}\]
+
+In this paper we do not attempt to reconstruct trajectories from CDR data considering the road network of Berlin. Instead we consider the sequence of positioned mobile network events together with the GPS observation and we try to determine the distance of the two trajectories based on the distances of individual pairs of points.
 
 %\begin{itemize}
     %\item 

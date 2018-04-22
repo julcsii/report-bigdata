@@ -2,11 +2,23 @@ In this section we review the related work with respect to relevant frameworks a
 
 \subsection{Trajectory mining}
 %http://crpit.com/confpapers/CRPITV137Wang.pdf
-For more accurate customer localization the individual observations of the mobile network events and the GPS location of the user can be grouped as set of trajectories. In this way we learn more about the location of the user by considering the semantics of trajectories and the related work done in the field of trajectory mining. Trajectory similarity is a key concept used in this paper for evaluating the quality of event positioning.
+For more accurate customer localization the individual observations of user location can be grouped as set of trajectories. In this way we learn more about the location of the user by considering the semantics of trajectories and the related work done in the field of trajectory mining. Trajectory similarity is a key concept used in this paper for evaluating the quality of event positioning.
 
 Trajectory mining has been widely researched during the last decades. Since trajectories represent a moving object's location history, there are plenty of use cases where trajectory mining can be successfully applied.  Due the fact that most mobile phones are now able to track GPS, there is more and more data available for this domain of data mining. There is however still no consensus on what dissimilarity or distance measure to use when comparing trajectories.
 
-If we consider trajectories as a sequence of points, the distance of two trajectories can be considered as an aggregate of distances between the points of the compared trajectories. The way of aggregation can determine the computation time, accuracy and sensitivity of the distance measure. 
+A trajectory reflects the motion history of a moving object. In practice trajectory is not continuous due to the limited sampling capability, therefore one reasonable approach is to consider trajectories as a sequence of points.
+
+\newdef{definition}{Definition}
+\begin{definition}
+A point $P(x,y)$\nomenclature{$P(x,y)$}{A point given as a pair of latitude and longitude, representing a geographical location.}can be defined as a pair of latitude $y$ and longitude $x$ values representing a geographical location.
+\end{definition}
+
+\begin{definition}
+A trajectory $T$\nomenclature{$T$}{Trajectory given as  time-stamped sequence of points with length $n$.} with length $n$ is defined as a time-stamped sequence of its consecutive points: \[T={(t_{1},P_{1}), (t_{2},P_{2}), .. (t_{n},P_{n}}), T \in M\]
+where $\mathcal{M}$\nomenclature{$\mathcal{M}$}{A set of possible trajectories.} is the set of possible trajectories.
+\end{definition}
+
+If we consider trajectories as a sequence of points, the distance of two trajectories can be considered as an aggregate of distances between the points of the compared trajectories. The way of aggregation can determine the computation time, accuracy and sensitivity of the distance measure.
 
 According to Magdy et al. (\cite{traj-sim-rev}) the existing trajectory distance measures can be classified into two classes: 
 \begin{itemize}
@@ -21,6 +33,16 @@ Although Euclidean distance relies on the fact that time series and trajectories
 On the other hand, DTW is a non-metric measure that provides more flexibility in terms of the length and sampling rate of the trajectories and takes the time-stamps into account. However it is more I/O and time consuming. For low quality GPS data the authors propose longest common sub-sequence (LCSS) method that is also used as a string similarity metric.
 
 Most of the above mentioned measures depend on the definition of spatial distance between two points. One of the most common spatial distance between two points can be given with the Haversine formula \cite{haversine}, which  defines the great-circle distance in kilometers between two points on a sphere given their longitudes and latitudes.
+
+\begin{definition}
+A for any two points on a sphere, the Haversine formula determines the spatial distance between the two points denoted with $d$\nomenclature{$d$}{Spatial distance between two points.} according to \cite{haversine}:
+    \[\Delta_{x} = x_{2} - x_{1}\]
+    \[\Delta_{y} = y_{2} - y_{1}\]
+    \[a = (\sin(\Delta_{y}/2))^2 + \cos{(y_{1})} * \cos{(y_{2})} * (\sin{(\Delta_{x}/2)})^2 \]
+    \[c = 2 * \arcsin{(\min{1,\sqrt{a}})}\]
+    \[d(P_{1}, P_{2}) = R * c\]
+    where $R$ is the radius of the Earth and $x_{i}, y_{i}$ is the longitude, latitude values of $P_{i}$ in radians.
+\end{definition}
 
 \subsection{Spark}
 Apache Spark is an efficient and general-purpose cluster computing system. It provides APIs for Java, Scala, Python and R. Spark runs an optimized engine that supports general execution graphs. Besides the core Spark, there are further high-level tools to support mining of large data sets as illustrated on Figure~\ref{fig:spark}. Spark SQL is built for SQL and structured data processing, MLlib for machine learning, GraphX for graph processing, and Spark Streaming for processing data that is continuously generated by different sources.
@@ -66,6 +88,15 @@ After the connection is established, Spark acquires executors on nodes of the cl
     \label{fig:spark-cluster}
 \end{figure}
 
+\subsubsection{Spark SQL}
+Spark SQL is designed for structured data processing.
+
+Internally, Spark SQL information about the structure of both the data and the computation to perform extra optimizations. Developers can interact with Spark SQL with SQL and through the Dataset API. It does not matter which API and language they use to express the computation, the result will be computed with the same execution engine providing unification and flexibility. \cite{spark-sql}
+
+A Dataset is a distributed collection of data, which provides the benefits of RDDs with the benefits of Spark SQL’s optimized execution engine. It can be constructed from JVM objects and then manipulated using transformations. The Dataset API is only available in Scala and Java, but not in Python or R. 
+
+A DataFrame is a Dataset that is organized into named columns and is similar to a table in a relational database or a data frame in Python or R, but with extra optimizations. DataFrames can be constructed from a different sources such as: structured data files, tables in Hive, external databases, or existing RDDs. The DataFrame API is available in Scala, Java, Python, and R. DataFrame operations are referred as “untyped transformations” in contrast to “typed transformations”  executed on Datasets.\cite{spark-sql}
+
 \subsection{Parquet}
 Apache Parquet is a columnar storage format. It is available in the Hadoop ecosystem with every data processing framework, data model or programming language. It is built to support highly efficient compression and encoding schemes. It has been demonstrated that the performance is heavily dependant on applying the right compression and encoding scheme to the data. Compression schemes can be specified on a per-column level in Parquet and allows adding more encoding schemes as they are invented and implemented.
 \cite{parquet}
@@ -74,7 +105,7 @@ Parquet is optimized for the Write Once Read Many (WORM) paradigm. It’s slow t
 
 Parquet supports partitioning, which is a technique for physically dividing the data during loading, based on values from one or more columns, to speed up queries regarding those columns. This comes very handy in a distributed file system, such as HDFS.
 
-Parquet storage format works very smoothly with SparkSQL - saving both time and space - as compression minimizes size of files by 75\% on average, columnar format allows reading only selective records, and reduced size of input data directly impacts the Spark DAG scheduler’s decision on execution graphs. \cite{ibm_parquet}
+Parquet storage format works very smoothly with Spark SQL - saving both time and space - as compression minimizes size of files by 75\% on average, columnar format allows reading only selective records, and reduced size of input data directly impacts the Spark DAG scheduler’s decision on execution graphs. \cite{ibm_parquet}
 
 \subsection{Containerization}
 Using Linux containers to deploy applications is called containerization. In the recent years it has become increasingly popular thanks to Docker, which is a platform to develop, deploy, and run applications with containers. It is developed to build, secure and manage different applications from development to production both on premises and in the cloud. Developing with Docker containers is flexible, scalable, portable and lightweight.
