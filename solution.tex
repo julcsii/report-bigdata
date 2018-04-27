@@ -15,14 +15,14 @@ the triangle inequality is also satisfied, $D$ is a metric.
 We compare the ground truth GPS trajectories to trajectories of CDR events for the same time window in a distributed fashion as shown in Figure \ref{fig:problem}. 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.45\textwidth]{images/localization_eval.png}
-    \caption{Problem illustration (Notation: red circle - GPS observation, heat map - CDR location, i.e. location of assigned cell to CDR event, blue line - distance of GPS and CDR location.)}
+    \includegraphics[width=0.45\textwidth]{images/problem.png}
+    \caption{Problem illustration}
     \label{fig:problem}
 \end{figure}
 
 To evaluate cellular network event based customer localization we calculate the Euclidean distance and several statistics of the pairwise distances between ground truth GPS trajectories and mobile network event trajectories. The Haversine distance is used to define the spatial distance between points. In the mobile network event trajectory, the location information is obtained from cell map data set.
 
-For these calculations the number of CDR and GPS observations need to match. We join the two trajectories on the timestamp, namely for each CDR event we select the closest GPS observation in time.
+For these calculations the number of CDR and GPS observations need to match, but this by the design of the data collection is guaranteed.
 
 Given a set of distance observations with size $n$, we consider $\{d_{1}, d_{2}, ..., d_{n}\}$ as $n$ independent identically distributed (i.i.d) random variables, each corresponding to one randomly selected observation and having the distribution of the population. Then we can calculate the following descriptive statistics for the sample:
 \begin{itemize}
