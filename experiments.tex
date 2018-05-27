@@ -1,149 +1,190 @@
 \subsection{Experimental setup}
 The experiments were executed in a Mac Book Pro with the following characteristics: 2,6 GHz Intel Core i5, 8 GB 1600 MHz DDR3 memory and 256 GB of storage.
 
-\subsection{Analysis}
-Data set coming from previous steps are used as an input for the calculations in the analysis. These are some of the most relevant features:
+\subsection{Data sets}
+The following data sources are used:
 \begin{itemize}
-    \item system\_time - timestamp of the recording
-    \item cell\_loc - event's approximated location
-    \item gps\_loc - event's GPS location, considered as ground truth
+\item Cell map Data: OpenCelliD public data set representing cell tower locations and meta data.
+\item CDR data: Sequences of network connections together with actual GPS location (recording every second the information about neighbouring cell towers including the connected one)
 \end{itemize}
 
-The analysis phase is executed with a following steps:
-\begin{enumerate}
-    \item Import Parquet data to pySpark DataFrame
-    \item Generated and display histograms on pairwise distances
-    \item Calculate descriptive statistics on pairwise distances:
-        \begin{itemize}
-            \item min
-            \item max
-            \item sum
-            \item mean
-            \item standard deviation
-        \end{itemize}
-    \item Calculate Euclidean distance measure on trajectories
-    \item Visualize on map
-\end{enumerate}
+\subsubsection{Cell map data set}
+The full data set of OpenCelliD was downloaded as of 2018-05-26. The downloaded .csv file is 3.38 GB on disk. The following attributes of OpenCelliD data set are used for the analysis \cite{opencellid}:
+\begin{itemize}
+\item radio: \textit{string} - Network type. One of the strings GSM, UMTS, LTE or CDMA.
+\item mcc:  \textit{integer}  -  Mobile Country Code, for example 262 for Germany.
+\item net: \textit{integer} - For GSM, UMTS and LTE networks, this is the Mobile Network Code (MNC). For CDMA networks, this is the System Identification number (SID).
+\item cell: \textit{integer} - Cell ID (CID) for GSM and LTE networks. UTRAN Cell ID / LCID for UMTS networks, which is the concatenation of 2 or 4 bytes of Radio Network Controller (RNC) code and 4 bytes of Cell ID. Base station identifier number (BID) for CDMA networks.
+\item lat: \textit{double} - Latitude in degrees between -90.0 and 90.0.
+\item lon: \textit{double} - Longitude in degrees between -180.0 and 180.0.
+\item samples: \textit{integer} - Total number of measurements assigned to the cell tower.
+\item changeable:  \textit{integer} - Defines if coordinates of the cell tower are exact or approximate. \footnote{changeable=1: the GPS position of the cell tower has been calculated from all available measurements. changeable=0: the GPS position of the cell tower is precise - no measurements have been used to calculate it.}
+\item created: \textit{integer} - The first time when the cell tower was seen and added to the OpenCelliD database. \footnote{A date in time stamp format: number of seconds since the UTC Unix Epoch of 1970-01-01T00:00:00Z (For example 1409522613 is the time stamp for 2014-08-31T22:03:33Z).}
+\item updated: \textit{integer} - The last time when the cell tower was seen and updated.
+\end{itemize}
 
-\subsection{Results}
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=0.45\textwidth]{images/histogram.png}
-    \caption{Histogram of distances using OpenCelliD cell map}
-    \label{fig:hist_opencell}
-\end{figure}
-
-Looking at the histograms of the pairwise Haversine distances between GPS location points and CDR location point on Figure \ref{fig:hist_opencell}, we can say that for 3G events the majority of the distances fall into the 250-500 meters range. For 2G events, the quality of the event positioning is worse, the majority of events are localized with more than 1000 meters accuracy. Here the distance is maximum two kilometers, due to the threshold we used for joining the CDR data with the cellmap data.
-
-Overall around the half of the CDR events are positioned with less than 500 meters error. This result can change depending on individual customer's mobile usage habits, network characteristics, cell map data source and the customer's geographical position.
-
-From the results in Table \ref{tab:dist_stats}, we can conclude that the overall positioning needs a lot of improvement, as the Euclidean distance is more than 150 kilometers. The reason why this measure is this high is the fact that the square operation in Euclidean distance tends to penalize large distances. The maximum is only around 1.6 kilometers, which does not seem to be extremely high, but this is only because the observations with higher distances are filtered out when joining the CDR and cellmap data sets. 
-The 1.40 meters minimum distance is very low, so it means that for some observations the positioning was very accurate. This would probably happen when the user was very close to the cell tower they connected to. 
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{|l|c|}
-        \hline 
-        count & $27680$ \\
-        \hline
-        Euclidean dist & $159402.67$ \\
-        \hline
-        min(dist) &  $1.40$\\
-        \hline
-        max(dist) &   $1652.51$\\
-        \hline
-        avg(dist) &  $842.40$\\
-        \hline
-        stddev(dist) &  $456.43$\\
-        \hline
-    \end{tabular}
-    \caption{Descriptive statistics of Haversine distances (in meters)}
-    \label{tab:dist_stats}
-\end{table}
-
-When the user is located between several cell towers, the connection can be passed from one tower to another depending on network traffic fluctuations and other factors. This phenomenon is often referred to as cell tower ping-pong handover. It can however be used for improving positioning and identifying points-of-interest (POIs). As seen in Figure \ref{fig:ping-pong}, the phone connects to a cell tower and to another one and then back again to the previous one. Without knowing the actual GPS position we could better approximate the location of the customer using the ping-pong handover schema.
+We expect less cell towers in the outskirts of the city and more towards the center. Figure \ref{fig:opencellid}\footnote{Only the latest observations are shown.} shows that the density of cell towers within Telfonica network from OpenCelliD is quite dense even in the outer regions of Berlin. Thus the data from OpenCelliD might be corrupted or of poor quality.
 
 \begin{figure}[h]
-    \centering
-    \includegraphics[width=0.5\textwidth]{images/ping-pong.png}
-    \caption{Cell ping-pong handover problem, GPS points color based on the connected cell tower}
-    \label{fig:ping-pong}
+    \includegraphics[width=0.5\textwidth]{images/opencellid.png}
+    \caption{Heat map of Telefonica cell towers in Berlin (Source: OpenCelliD) }
+    \label{fig:opencellid}
 \end{figure}
 
-This method can be further improved if we take into account the angle of the antennas on the cell towers. If we know which antenna is getting the signal, we can guess the direction of the transmitting cell phone and the signal strength can give an approximation of how far away it is. This method is called cell tower triangulation and can be quite accurate in rural regions with more cell towers. However the information about the angles of the antennas and the signal strength can be outdated or even missing therefore it is not always applicable. In this analysis we did not obtain robust data about the positions of the antennas and the signal strength for each CDR event.
-
-Positioning could be improved by reconstructing trajectories considering the road network of Berlin and the potential speed of the movement instead of simply assigning the the cell location from the cell map data.
-
-We identified three major external factors defining the accuracy of the positioning:
+\subsubsection{CDR data}
+The CDR data set was generated for several days between 2018-05-08 and 2018-05-17 in Berlin region with a custom application using Samsung S8 test phone (Android operating system). The generated .csv file is 2.21 gigabytes. The CDR data includes features such as:
 \begin{itemize}
-    \item individual mobile usage habits affecting the sparsity of CDR data,
-    \item geographical location, as rural and urban areas has different cell size and therefore location defines the accuracy of cell tower localization and
-    \item cellular network characteristics that define the overall data quality and the available attributes in the CDR data-set.
+\item system\_time: \textit{integer} - Date and time when event was generated in timestamp format, i.e. the number of seconds since Jan 01 1970. (UTC)
+\item unix\_dt: \textit{datetime} - Date and time when event was generated.
+\item net: \textit{string} - Type of the network (e.g. GSM, LTE or UMTS).
+\item lac: \textit{integer} - Location Area Code of the cell.
+\item cisac: \textit{integer} - Cell id.
+\item latitude: \textit{double} - Latitude of actual GPS location of the phone.
+\item longitude: \textit{double} - Longitude of actual GPS location of the phone.
 \end{itemize}
 
+There are cell towers that were assigned to the collected events more frequently than others. These are likely to be around the home or workplace of the user generating the data.
+
+On average there was a CDR record logged in about every second during the data collection. However that would be less frequent with real life usage, depending on individual mobile usage preferences. 
+
+By collecting observation in every second, we discretize time and make sure that the trajectories we compare using Euclidean distance have the same number of data points.
+
+\subsubsection{Data pre-processing}
+The cell map data cannot be processed with Pandas due to its size, therefore pySpark is used for the cleaning process with the following steps: 
+\begin{enumerate}
+    \item Import csv to pySpark DataFrame
+    \item Drop irrelevant columns
+    \item Keep only the records of cells in the Telefonica network in Berlin
+    \item Write cleaned data to parquet files
+\end{enumerate}
+
+The CDR data-set generated by the test phone in the given time period is stored in a single .csv file. The size of the file is around fifty megabytes, given only one device was used to record logs. However the size of real-world mobile network events generated daily can go up to hundreds of gigabytes per day. The following steps are executed during the pre-processing: 
+\begin{enumerate}
+   \item Import .csv files to pySpark DataFrame
+    \item Clean data:
+    \begin{itemize}
+        \item Fetch data from JSON column to data frame columns
+        \item Create cell(lac, cisac) column
+    \end{itemize}
+    \item Write data to Parquet files
+\end{enumerate}
+
+The DataFrames are re-partitioned before writing them to Parquet files to avoid having a large number of tiny files for a relatively small data. 
+
+\subsubsection{Positioning mobile network events}
+Having preprocessed the raw data, the next step is to assign a location to each of the events in the CDR data-set from the cell map data-set based on the respective cell tower id. 
+These steps are executed for positioning the CDR data:
+\begin{itemize}
+    \item Load CDR data from parquet files to pySpark DataFrame
+    \item Load cell map data from Parquet to pySpark DataFrame
+    \item Prepare imported DataFrames
+    \item Join CDR and cell map data-sets on cisac
+    \item Calculate Haversine distances
+    \item Persist joined DataFrame to parquet files
+\end{itemize}
 
 \subsection{Performance tests}
-In this section we compare the run-time of the tasks using different Spark standalone clusters and different data sources, namely comma separated value files and Parquet files. The specifications of the clusters are shown in Table \ref{tab:spec}
-
-The selected data-sets for the experiments are:
+In this section we run two types of tests. For different Spark standalone clusters we compare the runtime of
 \begin{itemize}
-    \item OpenCelliD data-set: 3.1 GB in .csv  and 1.04GB in Parquet format
-    \item CDR data-set: 48MB in .csv and 1.94MB in Parquet format
+    \item the standard Spark UDFs and the newly added Pandas UDFs (PUDF) implementation of Euclidean distance on two trajectories for several days,
+    \item common PySpark data frame operations using different data sources, namely comma separated value files and Parquet files. 
 \end{itemize}
 
-The operations executed in the experiment are the most common transformations within the project, such as filtering and joining. Since Spark applications are lazily evaluated, a count() operation was called on the resulting DataFrames to reliably reflect the execution time.
-
+The specifications of the clusters are shown in Table \ref{tab:spec}
 \begin{table}[h]
     \centering
     \resizebox{0.45\textwidth}{!}{%
-    \begin{tabular}{|l|c|c|}
+    \begin{tabular}{|l|c|c|c|}
     	\hline
-         & \textbf{Baseline} & \textbf{Alternative} \\
+         & \textbf{Cluster A} & \textbf{Cluster B} & \textbf{Cluster C}\\
         \hline 
-        \# of workers & 1 & 2 \\
+        \# of workers & 1 & 2 & 1 \\
         \hline
-        Worker cores  & 1 & 1 \\
+        Worker cores  & 1 & 1 & 2 \\
         \hline
-        Worker memory & 1GB & 2GB  \\
+        Worker memory & 1GB & 2GB & 2GB \\
         \hline
-        Driver memory & 1GB & 1GB \\
+        Driver memory & 1GB & 1GB & 1GB \\
         \hline
-        Executor memory & 512MB & 1GB\\
+        Executor memory & 512MB & 1GB & 1GB \\
         \hline
     \end{tabular}}
     \caption{Specifications of test clusters}
     \label{tab:spec}
 \end{table}
 
-Worker memory is the total amount of memory and worker core is the number of cores Spark applications are allowed to use on the machine. Driver memory refers to the amount of memory to use for the driver process, which is where the SparkContext is initialized. Spark executor memory is the amount of memory to use per executor process. 
-\cite{spark:rdds}
+Worker memory is the total amount of memory and worker core is the number of cores Spark applications are allowed to use on the machine. Driver memory refers to the amount of memory to use for the driver process, which is where the SparkContext is initialized. Spark executor memory is the amount of memory to use per executor process. \cite{spark:rdds}
+
+First we compare the performance of Pandas and Spark data frames over the several days in terms of the runtime of a simple Euclidean distance calculation between two trajectories.
+
+Then we test the performance of data frame operations with .csv and Parquet storage formats. Since Spark applications are lazily evaluated, a count() operation was called on the resulting DataFrames to reliably reflect the execution time.
 
 \subsection{Results}
-The execution time of different processing tasks on DataFrame created from the OpenCelliD cell map data-set can be seen in Table \ref{tab:res}.
+The results of the comparison of the standard Spark UDFs and the Pandas UDFs (PUDF) implementation of Euclidean distance on two trajectories for several days is shown in Table \ref{tab:spark-pd}. The larger the number of rows is, the more significant the improvement is. For all dates, the runtime of the Pandas UDF implementation with Cluster A is approximately eight times less than the runtime of the standard UDF. This is due to the fact that Pandas UDFs are not iterating over the rows, but use vectorized operations instead. Thus for large row count Pandas UDFs are more efficient than the standard UDFs. 
+
+Cluster B increases the runtime of both UDF and Pandas UDF implementations, as it adds more networking overhead with the additional worker, which is not balanced by the parallelism. Cluster B and C have similar performance, which means that for UDFs, the higher number of cores does not necessarily result in better performance.
 
 \begin{table}[h]
     \centering
-    \resizebox{0.45\textwidth}{!}{%
-    \begin{tabular}{|l||c|c|c|c|}
-    	\hline
-        \textbf{Task name} & \multicolumn{2}{c|}{\textbf{Baseline}} & \multicolumn{2}{c|}{\textbf{Alternative}}\\
+    \resizebox{0.48\textwidth}{!}{%
+    \begin{tabular}{|l|c|c|c|c|c|c|c|}
         \hline
-        \textit{Data source} & \textit{parquet} & \textit{.csv} & \textit{parquet} & \textit{.csv} \\
+         &  & \multicolumn{2}{c|}{\textbf{Cluster A}} & \multicolumn{2}{c|}{\textbf{Cluster B}} & \multicolumn{2}{c|}{\textbf{Cluster C}}\\
+    	\hline
+        \textbf{Date} & \textbf{Count} & \textit{UDF} & \textit{PUDF} &\textit{UDF} & \textit{PUDF} &\textit{UDF} & \textit{PUDF} \\
+        \hline
+        2018-05-08 & 88381 & 5.93  & 5.44 & 10.42 & 6.07 & 6.21 & 6.23 \\
+        \hline
+        2018-05-09 & 724101 & 15.68 & 6.45 & 14.81 & 6.70 & 12.56 & 7.55 \\
+        \hline
+        2018-05-10 & 388715 & 8.76 & 5.81 & 10.29 & 8.38 & 8.81 & 7.78 \\
+        \hline
+        2018-05-11 & 689603 & 13.25 & 5.73 & 12.49 & 6.92 & 12.04 & 7.78 \\
+        \hline
+        2018-05-13 & 1039702 & 18.50 & 6.24 & 15.68 & 7.28 & 15.44 & 7.69 \\
+        \hline
+        2018-05-14 & 135989 & 5.91 & 5.30 & 7.67 & 6.98 & 7.51 & 6.47 \\
+        \hline
+        2018-05-15 & 416399 & 10.38 & 5.47 & 9.76 & 6.69 & 9.36 & 6.86 \\
+        \hline
+        2018-05-16 & 43342 & 5.60 & 5.86 & 6.66 & 6.06 & 5.52 & 6.38 \\
+        \hline
+        2018-05-17 & 32799 & 5.03 & 5.74 & 6.48 & 6.72 & 5.24 & 6.56 \\
+        \hline
+        \textbf{All dates} & \textbf{3641574} & \textbf{59.45} & \textbf{7.15} & \textbf{35.01} & \textbf{8.38} & \textbf{40.05} & \textbf{8.02} \\
+        \hline
+    \end{tabular}}
+    \caption{Run-times of data processing tasks with different test clusters in seconds}
+    \label{tab:spark-pd}
+\end{table}
+
+The execution time of the common data frame operations in Spark with two different storage formats can be seen in Table \ref{tab:res}.
+
+It is obvious that .csv is not optimal storage format for big data processing. However in many cases data is available in .csv only, so it needs to be converted to Parquet for better efficiency. 
+
+\begin{table}[h]
+    \centering
+    \resizebox{0.48\textwidth}{!}{%
+    \begin{tabular}{|l||c|c|c|c|c|c|}
+    	\hline
+        \textbf{Task name} & \multicolumn{2}{c|}{\textbf{Cluster A}} & \multicolumn{2}{c|}{\textbf{Cluster B}} & \multicolumn{2}{c|}{\textbf{Cluster C}}\\
+        \hline
+        \textit{Data source} & \textit{parquet} & \textit{.csv} & \textit{parquet} & \textit{.csv} & \textit{parquet} & \textit{.csv}\\
         \hline 
         \hline
-        read\_data() & 5.27 & 130.68 & 7.19 &  91.6 \\
+        read\_data() & 29.17 & 247.70 & 27.79 & 142.92 & 23.31 & 167.39 \\
         \hline
-        min\_of\_col() & 13.47 & 65.17 & 14.39 & 44.31 \\
+        min\_of\_col() & 14.58 & 76.07 & 10.01 & 74.20 & 11.33 & 55.15 \\
         \hline
-        sort\_by\_col() & 55.67 & 168.12 & 59.56  & 112.05 \\
+        sort\_by\_col() & 71.75 & 198.81 & 53.35  & 161.16 & 47.10 & 136.64 \\
         \hline
-        filter\_by\_col() & 2.81 & 67.82 & 4.45  & 46.19 \\
+        filter\_by\_col() & 3.94 & 91.14 & 3.59 & 69.85 & 3.47 & 55.01 \\
         \hline
-        join\_dfs() & 18.66 & 104.05 & 18.15 & 86.06 \\
+        join\_dfs() & 44.69 & 167.56 & 30.38 & 123.29 & 27.57 & 107.08\\
         \hline
-        collect\_rows() & 1.93 & -\footnotemark & 2.12 & -\footnotemark \\
+        collect\_rows() & 3.05 & -\footnotemark & 2.86 & -\footnotemark & 2.31 & -\footnotemark \\
         \hline
-        \textbf{Total} & \textbf{97.82} & \textbf{536.84} & \textbf{105.86} & \textbf{380.65} \\
+        \textbf{Total} & \textbf{167.18} & \textbf{781.28} & \textbf{127.97} & \textbf{571.42} & \textbf{115.09} & \textbf{521.27} \\
         \hline
     \end{tabular}}
     \caption{Run-times of data processing tasks with different test clusters in seconds}
@@ -152,10 +193,7 @@ The execution time of different processing tasks on DataFrame created from the O
 \footnotetext{Running collect\_rows() method,'java.lang.OutOfMemoryError: Java heap space' occurs.}
 \footnotetext{Running collect\_rows() method,'ConnectionRefusedError' occurs, indicating that an error occurred while trying to connect to the Java server.}
 
-During the experiments we saw that reading data to pySpark DataFrames from Parquet files is more time-efficient than from .csv files, which is in line with our expectations.
-
-The total execution-time in case of Parquet data-source on the Baseline cluster is slightly less then on the Alternate cluster. Since the size of the files is not too large, the benefit of increasing number of workers and their memory could be neutralized by the communication overhead between workers. Instead of adding one more worker, it makes more sense to increase the memory of the existing worker or add more cores. However for large clusters with several physical machines, parallel computation with several workers can be better utilized. Since the test laptop only has 5 cores, adding more than 2 workers is problematic.
-
-In case of .csv data-source the execution time improves by adding another worker and increasing the memory, since the size of the data is larger.
+Cluster C has the shortest runtime, which means that for the data frame operations in this test, adding more cores instead of more workers results in the best performance for both storage formats. 
 
 With this architecture design, it is reasonably easy to deploy the application on Amazon Web Services (AWS) or similar cloud service provider allowing scalability to process terabytes of data.
+

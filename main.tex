@@ -9,11 +9,14 @@
 \makenomenclature
 \usepackage{hyperref}
 \usepackage{footnote}
+\usepackage{braket}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
 \makesavenoteenv{tabular}
 
 \begin{document}
 %Title
-\title{Evaluation of mobile network events based geo-positioning}
+\title{Towards a robust data processing framework for telecommunications data}
 \subtitle{[Extended Abstract]}
 
 %Author(s)
@@ -28,10 +31,9 @@ Julia Hermann\\
 %Abstract
 \maketitle
 %Date
-\date{28 April 2018}
+\date{22 June 2018}
 \begin{abstract}
-In this paper we validate the usage of localized Call Detail Records data for customer positioning by comparing them to ground-truth data. The data processing architecture relies on standalone Spark cluster running in Docker container. The analysis shows that a customer can be positioned given their CDR data from 3G network with around 250 to 500 meters accuracy, depending on individual mobile usage habits, network characteristics and geographical position. The quality of the positioning based on 2G events is worse, with more than a kilometer accuracy.
-
+Large amount of data captured by the telecommunications industry stakeholders needs to be efficiently processed. We propose a data processing framework that is flexible and can run on local machines, small clusters or even cloud computing platforms, such as Amazon Web Services. The core of this architecture is the open-source big data processing tool, Apache Spark using its Python API. We compare different storage formats and implementations for a simple problem and the most common dataframe operations using Spark.
 \end{abstract}
 \keywords{big data, Spark, geo-positioning, GPS, CDR}
 %Main parts
@@ -39,7 +41,7 @@ In this paper we validate the usage of localized Call Detail Records data for cu
 \section{Problem Statement}\subfile{problem_statement.tex}
 \section{Literature Review}\subfile{related_work.tex}
 \section{Solution}\subfile{solution.tex}
-\section{Proposed Approach}\subfile{approach.tex}
+\section{Tools and Frameworks}\subfile{tools.tex}
 \section{Experimental Evaluation}\subfile{experiments.tex}
 \section{Conclusion}\subfile{conclusion.tex}
 

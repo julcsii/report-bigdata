@@ -1,0 +1,15 @@
+In this subsection, a brief description is given of the tools used to clean, prepare the data, and to perform the algorithm.
+
+\subsection{Python}
+The project is written in Python 3. It is a general, multi-purpose and high-level programming language. Python is an interpreted language with dynamic semantics and object-orientation. It is often used as a back-end language for different applications, especially in the web. It is very widely used in the scientific field, particularly in data science. Its popularity roots in the high-level built in data structures, combined with dynamic typing and dynamic binding, making it very attractive for data processing and implementing algorithms on top of these data structures. 
+It is often used as a scripting or glue language to connect existing components together. Another great advantage of Python is that it is simple and has an easy to learn syntax, which enhances readability and reduces the cost of program maintenance. Python supports modules and packages, encouraging modularity and code reuse. \cite{python}
+
+\subsubsection{pandas}
+Pandas is an open-source Python library designed for data manipulation and analysis. It provides high-performance, easy-to-use data structures and data analysis tools. One of its popular data structures is DataFrame, which can be used for simple grouping, merging and joining. Besides pyspark.sql, this library was used for data cleaning and data preparation in this project.
+
+\subsubsection{pyspark.sql}
+The implementation heavily utilizes DataFrames in pyspark.sql, which is a Spark module written for Python to enable structured data processing on large data sets. 
+
+\subsection{Jupyter and pynb}
+Jupyter notebooks are used for data exploration and visualization. Jupyter is an open-source tool for data science, that allows the users to execute scripts in an interactive fashion. It supports different programming languages and frameworks such as Python, R, pySpark and so on. It is mostly used for prototyping, since it is not suitable for clean and sustainable code with proper version control. Also it is not possible to automate running Jupyter notebooks as recurring tasks. 
+For certain tasks, such as running daily reports based on Jupyter notebooks, pynb can be very helpful.It is an open-source tool that allows to convert Jupyter notebooks to plain python code and vice verse. The maintenance of such python notebooks is more sustainable and it is possible to programatically run them. \cite{pynb}
