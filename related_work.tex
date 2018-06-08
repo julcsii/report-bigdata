@@ -65,7 +65,7 @@ In Spark 2.3.0 Pandas UDFs have been introduced. Pandas UDFs are executed by Spa
 Apache Parquet is a columnar storage format. It is available in the Hadoop ecosystem with every data processing framework, data model or programming language. It is built to support highly efficient compression and encoding schemes. It has been demonstrated that the performance is heavily dependant on applying the right compression and encoding scheme to the data. Compression schemes can be specified on a per-column level in Parquet and allows adding more encoding schemes as they are invented and implemented.
 \cite{parquet}
 
-Parquet is optimized for the Write Once Read Many paradigm. It's slow to write, but it is very fast to read. If you only access a subset of the total columns then Parquet can be even more efficient than some other record oriented storage formats, such as .csv where the whole file needs to be read first. 
+Parquet is slow to write, but it is very fast to read as it is optimized for the \textit{write once read many} paradigm. If you only access a subset of the total columns then Parquet can be even more efficient than some other record oriented storage formats, such as .csv where the whole file needs to be read first. 
 
 Parquet supports partitioning, which is a technique for physically dividing the data during loading, based on values from one or more columns, to speed up queries regarding those columns. This comes very handy in a distributed file system, such as HDFS.
 
